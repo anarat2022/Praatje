@@ -437,7 +437,7 @@ Respond with ONLY valid JSON — your entire response must be a single JSON obje
   const messages = history.map(h => ({role: h.role, content: h.content}));
   let networkFailure = false;
 
-  if (!WORKER_URL || WORKER_URL === "https://praatje-proxy.anaratf.workers.dev/") {
+  if (!WORKER_URL || WORKER_URL === "PASTE_YOUR_WORKER_URL_HERE") {
     showError('The Worker URL is not set yet — open the file and paste your deployed Worker URL into WORKER_URL near the top of the script.');
     isProcessing = false;
     hintTopicBtn.disabled = false; hintGrammarBtn.disabled = false;
