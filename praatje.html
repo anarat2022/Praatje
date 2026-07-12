@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Praatje — Speak Dutch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EDEEE9;
+    --ink:#14171C;
+    --red:#E63946;
+    --blue:#1D3557;
+    --yellow:#F4B400;
+    --line:#14171C;
+    --paper:#FAFAF7;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:24px 16px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:880px;
+    border:3px solid var(--line);
+    background:var(--paper);
+  }
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:3px solid var(--line);
+    padding:18px 22px;
+    gap:12px;
+  }
+  .title-block h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:28px;
+    font-weight:700;
+    letter-spacing:-0.5px;
+  }
+  .title-block p{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    color:var(--blue);
+    margin-top:4px;
+  }
+  .level-badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    border:2px solid var(--line);
+    background:var(--yellow);
+    padding:6px 10px;
+    white-space:nowrap;
+    font-weight:500;
+  }
+  .hero{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    padding:40px 20px 32px;
+    border-bottom:3px solid var(--line);
+  }
+  #micBtn{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    border:4px solid var(--line);
+    background:var(--red);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:transform .12s ease, background .2s ease;
+    box-shadow:6px 6px 0 var(--line);
+  }
+  #micBtn:active{ transform:translate(3px,3px); box-shadow:3px 3px 0 var(--line); }
+  #micBtn.listening{ background:var(--blue); animation:pulse 1.1s infinite; }
+  #micBtn.thinking{ background:var(--yellow); cursor:wait; }
+  #micBtn.speaking{ background:#2A9D5C; }
+  @keyframes pulse{
+    0%{ box-shadow:6px 6px 0 var(--line), 0 0 0 0 rgba(29,53,87,0.35); }
+    70%{ box-shadow:6px 6px 0 var(--line), 0 0 0 18px rgba(29,53,87,0); }
+    100%{ box-shadow:6px 6px 0 var(--line), 0 0 0 0 rgba(29,53,87,0); }
+  }
+  #micBtn svg{ width:42px; height:42px; fill:var(--paper); }
+  #micStatus{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--ink);
+    min-height:16px;
+  }
+  .hint-btn{
+    background:none;
+    border:none;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--blue);
+    text-decoration:underline;
+    text-underline-offset:3px;
+    cursor:pointer;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    padding:2px;
+  }
+  .hint-btn:disabled{ opacity:0.4; cursor:default; }
+  .lang-toggle{
+    display:flex;
+    border:2px solid var(--line);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+  }
+  .lang-toggle button{
+    padding:6px 14px;
+    border:none;
+    background:var(--paper);
+    cursor:pointer;
+    color:var(--ink);
+    border-right:2px solid var(--line);
+  }
+  .lang-toggle button:last-child{ border-right:none; }
+  .lang-toggle button.active{ background:var(--ink); color:var(--paper); }
+  #startLevelToggle{ flex-wrap:wrap; }
+  #startLevelToggle button{ padding:5px 10px; }
+
+  .body-grid{ display:block; }
+  .transcript{
+    padding:18px 20px;
+    max-height:480px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .msg{ display:flex; flex-direction:column; gap:4px; }
+  .msg .who{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:#6b6f76;
+  }
+  .msg.user .who{ color:var(--red); }
+  .msg.sanne .who{ color:var(--blue); }
+  .msg .text-nl{ font-size:16px; line-height:1.5; font-weight:600; color:var(--ink); }
+  .msg.user .text-nl{ font-weight:400; }
+  .tap-word{
+    cursor:pointer;
+    border-bottom:1.5px dotted var(--blue);
+    transition:background .1s ease;
+  }
+  .tap-word:hover{ background:rgba(29,53,87,0.08); }
+  .tap-word:active{ background:rgba(29,53,87,0.18); }
+  .msg .text-en{
+    font-size:13px;
+    line-height:1.4;
+    color:#6b6f76;
+    font-style:italic;
+    margin-top:2px;
+  }
+  .hint-marker{ font-style:italic; color:#6b6f76; font-size:13px; }
+  .correction{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:#6b6f76;
+    border-left:3px solid var(--yellow);
+    padding:5px 0 5px 10px;
+    margin-top:5px;
+    background:rgba(244,180,0,0.08);
+  }
+  .correction b{ color:var(--ink); font-weight:600; }
+  footer{
+    border-top:3px solid var(--line);
+    padding:12px 20px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:#6b6f76;
+    text-align:center;
+  }
+  .error-banner{
+    background:var(--red);
+    color:var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    padding:10px 20px;
+    display:none;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .retry-btn{
+    background:var(--paper);
+    color:var(--red);
+    border:2px solid var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    padding:3px 10px;
+    cursor:pointer;
+    text-transform:uppercase;
+  }
+  .vocab-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:8px;
+  }
+  .vocab-chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    border:2px solid var(--blue);
+    color:var(--blue);
+    background:var(--paper);
+    padding:4px 9px;
+    cursor:pointer;
+    text-transform:none;
+  }
+  .vocab-chip.added{
+    background:var(--blue);
+    color:var(--paper);
+    cursor:default;
+  }
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(20,23,28,0.6);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    background:var(--paper);
+    border:3px solid var(--line);
+    max-width:440px;
+    width:100%;
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .modal-box h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:20px;
+  }
+  .flashcard{
+    border:2px solid var(--line);
+    min-height:140px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:24px;
+    cursor:pointer;
+    font-size:22px;
+    font-weight:600;
+  }
+  .flashcard .answer{
+    color:var(--blue);
+    font-size:16px;
+    font-style:italic;
+    margin-top:10px;
+    font-weight:400;
+  }
+  .flashcard-progress{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:#6b6f76;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .flashcard-actions{ display:flex; gap:10px; }
+  .flashcard-actions button{
+    flex:1;
+    padding:10px;
+    border:2px solid var(--line);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    text-transform:uppercase;
+    cursor:pointer;
+    background:var(--paper);
+  }
+  .flashcard-actions .got-it{ background:#2A9D5C; color:var(--paper); border-color:#2A9D5C; }
+  .flashcard-actions .still-learning{ background:var(--yellow); border-color:var(--yellow); }
+  .modal-close{
+    align-self:flex-end;
+    background:none;
+    border:none;
+    font-size:20px;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .empty-vocab{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:#6b6f76;
+    text-align:center;
+    padding:20px 0;
+  }
+  .vocab-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    border:2px solid var(--line);
+    padding:8px 10px;
+  }
+  .vocab-row .words{ font-size:14px; }
+  .vocab-row .words b{ color:var(--blue); }
+  .vocab-row .del-btn{
+    background:var(--red);
+    color:var(--paper);
+    border:none;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    padding:5px 8px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="title-block">
+      <h1>Praatje</h1>
+      <p>speak dutch, one chat at a time</p>
+    </div>
+    <div class="level-badge" id="levelBadge" title="Tap for what this means" style="cursor:pointer;">CEFR A2+</div>
+    <button id="vocabBtn" class="hint-btn" style="color:var(--blue);">Vocab (0)</button>
+    <button id="clearBtn" class="hint-btn" style="color:var(--red);">Clear conversation</button>
+  </header>
+
+  <div class="error-banner" id="errorBanner"></div>
+
+  <div class="hero">
+    <button id="micBtn" aria-label="Start speaking">
+      <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+    </button>
+    <div id="micStatus">tap to talk to sanne</div>
+    <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
+      <button id="hintTopicBtn" class="hint-btn">Not sure what to say</button>
+      <button id="hintGrammarBtn" class="hint-btn">Not sure how to say it</button>
+    </div>
+    <div class="lang-toggle">
+      <button id="langEnBtn">I'LL SPEAK EN</button>
+      <button id="langNlBtn" class="active">I'LL SPEAK NL</button>
+    </div>
+    <div class="lang-toggle" id="startLevelToggle">
+      <button data-lvl="1" class="startlvl">A2</button>
+      <button data-lvl="2" class="startlvl active">A2+</button>
+      <button data-lvl="3" class="startlvl">B1</button>
+      <button data-lvl="4" class="startlvl">B1+</button>
+      <button data-lvl="5" class="startlvl">B2</button>
+    </div>
+    <div id="levelPickerHint" style="font-family:'IBM Plex Mono', monospace; font-size:10px; color:#6b6f76; text-transform:uppercase; letter-spacing:1px;">set starting level, then talk</div>
+  </div>
+
+  <div class="transcript" id="transcript">
+    <div class="msg sanne">
+      <div class="who">Sanne</div>
+      <div class="text-nl">Hoi! Ik ben Sanne. Druk op de microfoon en zeg gewoon hallo.</div>
+      <div class="text-en">Hi! I'm Sanne. Tap the mic and just say hello.</div>
+    </div>
+  </div>
+
+  <footer>no sign-up · your voice never leaves your browser except as text to sanne</footer>
+</div>
+
+<div class="modal-overlay" id="vocabModal">
+  <div class="modal-box">
+    <button class="modal-close" id="vocabClose">&times;</button>
+    <h2>Vocab review</h2>
+    <div style="display:flex; gap:14px;">
+      <button id="showReviewBtn" class="hint-btn">Review</button>
+      <button id="showListBtn" class="hint-btn">Manage list</button>
+    </div>
+    <div id="reviewPane">
+      <div class="flashcard-progress" id="vocabProgress"></div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button id="prevCardBtn" class="hint-btn" style="font-size:18px;">‹</button>
+        <div class="flashcard" id="flashcardEl" style="flex:1;"></div>
+        <button id="nextCardBtn" class="hint-btn" style="font-size:18px;">›</button>
+      </div>
+      <div class="flashcard-actions" id="flashcardActions" style="display:none;">
+        <button class="still-learning" id="stillLearningBtn">Still learning</button>
+        <button class="got-it" id="gotItBtn">Got it</button>
+      </div>
+    </div>
+    <div id="listPane" style="display:none;">
+      <button id="addManualBtn" class="hint-btn" style="margin-bottom:10px;">+ Add word manually</button>
+      <div id="vocabListEl" style="max-height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== CONFIG — fill this in after you deploy the Cloudflare Worker ======
+// Paste the URL Cloudflare gives you, e.g. "https://praatje-proxy.yourname.workers.dev"
+const WORKER_URL = "PASTE_YOUR_WORKER_URL_HERE";
+// ============================================================================
+
+const transcriptEl = document.getElementById('transcript');
+
+transcriptEl.addEventListener('click', (e) => {
+  const wordEl = e.target.closest('.tap-word');
+  if (!wordEl) return;
+  const word = wordEl.dataset.word;
+  if (!word) return;
+  const already = vocabList.some(v => v.nl.toLowerCase() === word.toLowerCase());
+  if (already) { alert(`"${word}" is already in your vocab list.`); return; }
+  const meaning = prompt(`Add "${word}" to your vocab list — what does it mean in English?`);
+  if (meaning && meaning.trim()) {
+    addVocabWord(word, meaning.trim());
+    wordEl.style.background = 'rgba(42,157,92,0.25)';
+  }
+});
+const micBtn = document.getElementById('micBtn');
+const micStatus = document.getElementById('micStatus');
+const levelBadge = document.getElementById('levelBadge');
+const errorBanner = document.getElementById('errorBanner');
+const langEnBtn = document.getElementById('langEnBtn');
+const langNlBtn = document.getElementById('langNlBtn');
+const hintTopicBtn = document.getElementById('hintTopicBtn');
+const hintGrammarBtn = document.getElementById('hintGrammarBtn');
+
+let history = []; // {role:'user'|'assistant', content:string}
+let userTurns = 0;
+let isProcessing = false;
+let inputLang = 'nl-NL';
+
+const CEFR_LADDER = [
+  { label:'A2',  turnsToNext:5, desc:'A2: keep sentences short and simple — present tense, everyday concrete words (home, food, family, weather), basic connectors (en, maar, want). Speak slowly and clearly in your phrasing. Avoid idioms entirely.' },
+  { label:'A2+', turnsToNext:5, desc:'A2+: still simple and everyday, but a bit more range — simple opinions ("ik vind het leuk"), routines, mostly present tense with a little simple past (ik heb gedaan, ik ging). Still no idioms, still concrete topics.' },
+  { label:'B1',  turnsToNext:6, desc:'B1: hold a real connected conversation on familiar topics — express opinions and give reasons ("omdat", "dus"), use past and future tense comfortably, slightly longer sentences. A few very common idioms are fine if explained naturally through context.' },
+  { label:'B1+', turnsToNext:6, desc:'B1+: more natural pacing and connectors (hoewel, terwijl, doordat, toch), can touch slightly abstract topics (opinions on culture, plans, hypotheticals), sentences can have a subordinate clause or two.' },
+  { label:'B2',  turnsToNext:999, desc:'B2: speak at a genuinely native conversational pace with normal sentence complexity, use idioms and colloquial expressions naturally without dumbing them down, do not artificially simplify vocabulary — treat her like a Dutch adult friend, not a learner, except for the correction/hint mechanics.' }
+];
+let levelIndex = 1;
+
+const STORAGE_KEY = 'praatje_conversation_v1';
+const VOCAB_KEY = 'praatje_vocab_v1';
+let vocabList = []; // {nl, en, weak, addedAt}
+
+function loadVocab(){
+  try {
+    const raw = localStorage.getItem(VOCAB_KEY);
+    vocabList = raw ? JSON.parse(raw) : [];
+  } catch(e) { vocabList = []; }
+  updateVocabBtn();
+}
+
+function saveVocab(){
+  try { localStorage.setItem(VOCAB_KEY, JSON.stringify(vocabList)); } catch(e) { /* not fatal */ }
+  updateVocabBtn();
+}
+
+function updateVocabBtn(){
+  const btn = document.getElementById('vocabBtn');
+  if (btn) btn.textContent = 'Vocab (' + vocabList.length + ')';
+}
+
+function addVocabWord(nl, en){
+  if (vocabList.some(v => v.nl.toLowerCase() === nl.toLowerCase())) return;
+  vocabList.push({ nl, en, weak: 0, addedAt: Date.now() });
+  saveVocab();
+}
+
+let savedTurns = []; // {kind:'user'|'hint'|'sanne', text, label, reply_nl, reply_en, correction}
+
+function saveState(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      history, levelIndex, userTurns, turns: savedTurns
+    }));
+  } catch(e) { /* storage full or unavailable — conversation just won't persist, not fatal */ }
+}
+
+let conversationStarted = false;
+
+function lockLevelPicker(){
+  conversationStarted = true;
+  document.querySelectorAll('.startlvl').forEach(b => { b.disabled = true; b.style.opacity = '0.4'; b.style.cursor = 'default'; });
+  const hint = document.getElementById('levelPickerHint');
+  if (hint) hint.textContent = 'level is now set by how the conversation is going — clear the conversation to pick a new starting level';
+}
+function unlockLevelPicker(){
+  conversationStarted = false;
+  document.querySelectorAll('.startlvl').forEach(b => { b.disabled = false; b.style.opacity = '1'; b.style.cursor = 'pointer'; });
+  const hint = document.getElementById('levelPickerHint');
+  if (hint) hint.textContent = 'set starting level, then talk';
+}
+
+function clearConversation(){
+  localStorage.removeItem(STORAGE_KEY);
+  history = [];
+  userTurns = 0;
+  levelIndex = 1;
+  savedTurns = [];
+  updateLevelBadge();
+  transcriptEl.innerHTML = `<div class="msg sanne"><div class="who">Sanne</div><div class="text-nl">Hoi! Ik ben Sanne. Druk op de microfoon en zeg gewoon hallo.</div><div class="text-en">Hi! I'm Sanne. Tap the mic and just say hello.</div></div>`;
+  document.querySelectorAll('.startlvl').forEach(b => b.classList.remove('active'));
+  document.querySelector('.startlvl[data-lvl="2"]').classList.add('active');
+  unlockLevelPicker();
+}
+
+document.getElementById('clearBtn').onclick = () => {
+  if (confirm('Clear this conversation? This cannot be undone.')) clearConversation();
+};
+
+function loadSavedState(){
+  let raw;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch(e) { return; }
+  if (!raw) return;
+  let data;
+  try { data = JSON.parse(raw); } catch(e) { return; }
+  if (!data || !Array.isArray(data.turns) || data.turns.length === 0) return;
+
+  history = data.history || [];
+  levelIndex = typeof data.levelIndex === 'number' ? data.levelIndex : 1;
+  userTurns = typeof data.userTurns === 'number' ? data.userTurns : 0;
+  savedTurns = data.turns;
+  updateLevelBadge();
+  lockLevelPicker(); // conversation already has turns, so the starting-level picker no longer applies
+
+  transcriptEl.innerHTML = '';
+  // replay oldest to newest so addToTop ends up with newest visually on top, same as live use
+  data.turns.forEach(t => {
+    if (t.kind === 'user') renderUserBubble(t.text);
+    else if (t.kind === 'hint') renderHintBubble(t.label);
+    else if (t.kind === 'sanne') renderSanneBubble(t.reply_nl, t.reply_en, t.correction, false, t.vocab);
+  });
+}
+
+function updateLevelBadge(){ levelBadge.textContent = 'CEFR ' + CEFR_LADDER[levelIndex].label; }
+levelBadge.onclick = () => {
+  alert('CEFR is the standard scale for language level, from A1 (total beginner) to C2 (fluent).\n\nThis badge moves up on its own every few exchanges — as you keep talking, Sanne is nudged to use more Dutch and less English to match your growing level. It\'s meant to happen automatically, so seeing it climb (like B1 → B1+) means the app is working as intended.');
+};
+document.querySelectorAll('.startlvl').forEach(btn => {
+  btn.onclick = () => {
+    if (btn.disabled || conversationStarted) return;
+    document.querySelectorAll('.startlvl').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    levelIndex = parseInt(btn.dataset.lvl, 10) - 1;
+    userTurns = 0;
+    updateLevelBadge();
+  };
+});
+updateLevelBadge();
+
+langEnBtn.onclick = () => { inputLang='en-US'; langEnBtn.classList.add('active'); langNlBtn.classList.remove('active'); };
+langNlBtn.onclick = () => { inputLang='nl-NL'; langNlBtn.classList.add('active'); langEnBtn.classList.remove('active'); };
+
+
+function showError(msg, retryFn){
+  errorBanner.innerHTML = '';
+  errorBanner.appendChild(document.createTextNode(msg));
+  if (retryFn) {
+    const btn = document.createElement('button');
+    btn.className = 'retry-btn';
+    btn.textContent = 'Retry';
+    btn.onclick = () => { errorBanner.style.display = 'none'; retryFn(); };
+    errorBanner.appendChild(btn);
+  }
+  errorBanner.style.display = 'flex';
+}
+
+// --- Speech recognition (back to browser dictation — Claude handles everything, no Gemini dependency) ---
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+if (SpeechRecognition) {
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+} else {
+  showError('This browser does not support voice recognition. Try Chrome on desktop or Android.');
+}
+let isListening = false;
+let finalTranscript = '';
+let latestInterim = '';
+let userRequestedStop = false;
+let autoRestartCount = 0;
+const MAX_AUTO_RESTARTS = 5;
+
+micBtn.onclick = () => {
+  if (!recognition) return;
+  if (isProcessing) return;
+  if (isListening) {
+    userRequestedStop = true;
+    recognition.stop();
+    return;
+  }
+  window.speechSynthesis.cancel();
+  // Safari (especially iOS) only allows speech synthesis to start if it's tied directly
+  // to a user gesture. Since Sanne's reply comes back after an async network call, Safari
+  // silently blocks it unless we "unlock" audio right here, synchronously, on the tap itself.
+  const unlock = new SpeechSynthesisUtterance('');
+  unlock.volume = 0;
+  window.speechSynthesis.speak(unlock);
+  micBtn.classList.remove('speaking');
+  finalTranscript = '';
+  latestInterim = '';
+  userRequestedStop = false;
+  autoRestartCount = 0;
+  recognition.lang = inputLang;
+  try { recognition.start(); } catch(e) { showError('Could not start the microphone: ' + e.message); }
+};
+
+if (recognition) {
+  recognition.onstart = () => {
+    isListening = true;
+    micBtn.classList.add('listening');
+    micStatus.textContent = 'listening... tap again when done';
+  };
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      userRequestedStop = true; // don't try to auto-resume after a permission error
+      isListening = false;
+      micBtn.classList.remove('listening');
+      micStatus.textContent = 'tap to talk to sanne';
+      showError('Microphone access was blocked. Open this file directly in Chrome and allow the mic if this keeps happening.');
+    }
+    // other errors (no-speech, network blips, etc.) are handled uniformly in onend below —
+    // Chrome fires onend right after onerror, so we let that single place decide whether to resume
+  };
+  recognition.onend = () => {
+    isListening = false;
+    micBtn.classList.remove('listening');
+
+    // Whatever was still "in progress" (not yet marked final by Chrome) when this ended
+    // is real speech we don't want to lose — fold it in before deciding what happens next.
+    if (latestInterim.trim()) {
+      finalTranscript += latestInterim.trim() + ' ';
+      latestInterim = '';
+    }
+
+    if (!userRequestedStop && autoRestartCount < MAX_AUTO_RESTARTS) {
+      // Recognition stopped on its own (a Chrome hiccup, not the user tapping stop) —
+      // resume automatically so a long sentence never gets cut short mid-way.
+      autoRestartCount++;
+      try {
+        recognition.start();
+        return;
+      } catch(err) {
+        // couldn't restart — fall through and finalize whatever we have so far
+      }
+    }
+
+    const said = finalTranscript.trim();
+    finalTranscript = '';
+    if (said) {
+      addUserMessage(said, inputLang === 'nl-NL' ? 'nl' : 'en');
+      sendToSanne(said);
+    } else {
+      micStatus.textContent = 'tap to talk to sanne';
+    }
+  };
+  recognition.onresult = (event) => {
+    let interim = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        finalTranscript += transcript + ' ';
+      } else {
+        interim += transcript;
+      }
+    }
+    latestInterim = interim;
+    if (interim) micStatus.textContent = interim;
+  };
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function tappableWords(text){
+  // wraps each word in a span so it can be tapped to save individually, keeping punctuation/spacing intact
+  return text.split(/(\s+)/).map(chunk => {
+    if (/^\s+$/.test(chunk) || chunk === '') return chunk;
+    const clean = chunk.replace(/^[^\wÀ-ÿ]+|[^\wÀ-ÿ]+$/g, '');
+    if (!clean) return escapeHtml(chunk);
+    return escapeHtml(chunk).replace(escapeHtml(clean), `<span class="tap-word" data-word="${escapeHtml(clean)}">${escapeHtml(clean)}</span>`);
+  }).join('');
+}
+
+function extractJsonObject(raw){
+  const start = raw.indexOf('{');
+  const end = raw.lastIndexOf('}');
+  if (start === -1 || end === -1 || end < start) return null;
+  return raw.slice(start, end + 1);
+}
+
+function addToTop(el){
+  transcriptEl.insertBefore(el, transcriptEl.firstChild);
+  transcriptEl.scrollTop = 0;
+}
+
+function renderUserBubble(text){
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `<div class="who">You</div><div class="text-nl">${tappableWords(text)}</div>`;
+  addToTop(div);
+}
+
+function addUserMessage(text, lang){
+  lockLevelPicker();
+  renderUserBubble(text);
+  history.push({role:'user', content:text});
+  userTurns++;
+  if (userTurns >= CEFR_LADDER[levelIndex].turnsToNext && levelIndex < CEFR_LADDER.length - 1) {
+    levelIndex++; userTurns = 0; updateLevelBadge();
+  }
+  savedTurns.push({kind:'user', text});
+  saveState();
+}
+
+function renderHintBubble(label){
+  const marker = document.createElement('div');
+  marker.className = 'msg user';
+  marker.innerHTML = `<div class="who">You</div><div class="text-nl hint-marker">${escapeHtml(label)}</div>`;
+  addToTop(marker);
+}
+
+function addHintMarker(label, apiContent){
+  lockLevelPicker();
+  renderHintBubble(label);
+  history.push({role:'user', content: apiContent});
+  savedTurns.push({kind:'hint', label});
+  saveState();
+}
+
+hintTopicBtn.onclick = () => {
+  if (isProcessing) return;
+  const hintContent = "(I don't know what to say next — can you suggest an idea or a direction for what I could talk about right now, then continue the conversation?)";
+  addHintMarker("(asked what to say)", hintContent);
+  sendToSanne(hintContent, true);
+};
+
+hintGrammarBtn.onclick = () => {
+  if (isProcessing) return;
+  const hintContent = "(I know roughly what I want to say but I'm not sure how to say it correctly in Dutch — the grammar, conjugation, word order, or the right word. Please look at what we were just talking about and give me the actual Dutch I need, simply explained, then continue the conversation.)";
+  addHintMarker("(asked for help with the Dutch)", hintContent);
+  sendToSanne(hintContent, true);
+};
+
+function buildSystemPrompt(){
+  const stage = CEFR_LADDER[levelIndex];
+  return `You are Sanne, a Dutch friend having a real spoken voice conversation with the learner — like catching up over coffee, not a classroom. NEVER break character to explain a grammar rule or announce a correction; this should feel exactly like chatting with a patient native-speaker friend.
+
+You always reply primarily IN DUTCH — that is the whole point, she needs to hear and practise real Dutch. You also provide a natural English translation of your own reply so she can check her understanding, but the English is never spoken aloud, only shown as a subtitle.
+
+The learner's current CEFR stage is ${stage.label}. ${stage.desc}
+
+Correction behavior: if her last message (in Dutch) had a genuine mistake (wrong conjugation, word order, wrong word), naturally use the correct form yourself somewhere in your reply, the way a friend repeats something back correctly without making a big deal of it. Separately, fill the "correction" field so the app can show a quiet written note. Only set had_mistake true for a real, worth-noting error, not for minor style, and not on every turn even if something is slightly off, so it doesn't feel like grading.
+
+If her message is a request for a hint (she said she's stuck or wants help), figure out from the conversation what kind of stuck she likely is and address that specifically — don't default to just suggesting a topic. If she seems unsure what to say next, suggest a concrete next thing to say. If she seems to be struggling with the Dutch itself (a word she doesn't know, which verb form or conjugation to use, word order, a grammar pattern), give her that directly and simply — e.g. "you'd say 'ik ga' not 'ik gaat', the -t drops for ik" — a real, useful piece of help, not just vague encouragement. Keep hint replies to 2-3 short sentences maximum, even for grammar explanations — brief and concrete beats thorough. Then continue the conversation with an easy follow-up. Leave correction empty for hint requests.
+
+If her message contains multiple sentences or points, respond to all of them, not just the first one — briefly touch on each thing she said before your follow-up, the way a good listener would in a real conversation, rather than latching onto only the first sentence and ignoring the rest.
+
+Always end with a natural follow-up question or comment, like a real person keeping a conversation going.
+
+Vocab building: from your OWN reply, pick 0 to 2 Dutch words or short phrases that are genuinely useful to learn at her level — not the trivial words she surely already knows (en, ik, is), but real vocabulary building blocks. Skip this if nothing in your reply is worth flagging; don't force it every single turn.
+
+Respond with ONLY valid JSON — your entire response must be a single JSON object and nothing else. No greeting before it, no repeating your reply after it, no markdown fences, no commentary. Exactly matching this schema:
+{"reply_nl":"your spoken Dutch reply","reply_en":"natural English translation of that same reply, shown as subtitle only","correction":{"had_mistake":false,"original":"","better":"","note":""},"vocab":[{"nl":"Dutch word or phrase","en":"English meaning"}]}
+
+"original" is the exact part of her last message that was off, "better" is the corrected Dutch, "note" is a casual explanation under 8 words — leave all three empty when had_mistake is false. "vocab" should be an empty array when nothing stands out.`;
+}
+
+// Shared request/retry/error logic for every call to Sanne herself (Claude), whether the turn
+// originated as a hint (text) or a transcribed spoken turn (also text, by the time it gets here).
+// Returns the parsed reply object on success, or null if it ultimately failed (error already shown).
+async function callSanaAPI(messages, retryFn, attempt){
+  attempt = attempt || 1;
+  isProcessing = true;
+  hintTopicBtn.disabled = true; hintGrammarBtn.disabled = true;
+  micBtn.classList.add('thinking');
+  micStatus.textContent = 'sanne is thinking...';
+  errorBanner.style.display = 'none';
+
+  if (!WORKER_URL || WORKER_URL === "PASTE_YOUR_WORKER_URL_HERE") {
+    showError('The Worker URL is not set yet — open the file and paste your deployed Worker URL into WORKER_URL near the top of the script.');
+    isProcessing = false;
+    hintTopicBtn.disabled = false; hintGrammarBtn.disabled = false;
+    micBtn.classList.remove('thinking');
+    micStatus.textContent = 'tap to talk to sanne';
+    return null;
+  }
+
+  try {
+    const response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 1000,
+        system: buildSystemPrompt(),
+        messages: messages
+      })
+    });
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      throw new Error('HTTP ' + response.status + (errText ? ': ' + errText.slice(0,150) : ''));
+    }
+    const data = await response.json();
+    const textBlock = data.content.find(c => c.type === 'text');
+    let raw = textBlock ? textBlock.text : '{}';
+    raw = raw.replace(/```json|```/g, '').trim();
+    let parsed = null;
+    try {
+      parsed = JSON.parse(raw);
+    } catch(e) {
+      const extracted = extractJsonObject(raw);
+      if (extracted) {
+        try { parsed = JSON.parse(extracted); } catch(e2) { parsed = null; }
+      }
+    }
+    if (!parsed) {
+      const cutoff = raw.indexOf('{');
+      const plainPart = (cutoff > -1 ? raw.slice(0, cutoff) : raw).trim();
+      parsed = { reply_nl: plainPart || "Sorry, ik snapte dat niet helemaal — kun je het nog eens zeggen?", reply_en: '', correction:{had_mistake:false}, vocab:[] };
+    }
+    isProcessing = false;
+    hintTopicBtn.disabled = false; hintGrammarBtn.disabled = false;
+    micBtn.classList.remove('thinking');
+    micStatus.textContent = 'tap to talk to sanne';
+    return parsed;
+  } catch(err) {
+    const networkFailure = (err instanceof TypeError);
+
+    isProcessing = false;
+    hintTopicBtn.disabled = false; hintGrammarBtn.disabled = false;
+    micBtn.classList.remove('thinking');
+
+    if (attempt < 3) {
+      await new Promise(r => setTimeout(r, 600 * attempt));
+      return callSanaAPI(messages, retryFn, attempt + 1);
+    }
+
+    const msg = networkFailure
+      ? 'The request never reached the server (blocked by network/extension?). Tried 3 times.'
+      : 'Could not reach Sanne — ' + err.message;
+    showError(msg, retryFn);
+    micStatus.textContent = 'tap to talk to sanne';
+    return null;
+  }
+}
+
+async function sendToSanne(userText, isHintRequest){
+  const messages = history.map(h => ({role: h.role, content: h.content}));
+  const parsed = await callSanaAPI(messages, () => sendToSanne(userText, isHintRequest));
+  if (parsed) renderSanneReply(parsed);
+}
+
+function renderSanneBubble(reply_nl, reply_en, correction, doSpeak, vocab){
+  const div = document.createElement('div');
+  div.className = 'msg sanne';
+  div.innerHTML = `<div class="who">Sanne</div><div class="text-nl">${tappableWords(reply_nl || '')}</div>${reply_en ? `<div class="text-en">${escapeHtml(reply_en)}</div>` : ''}`;
+
+  if (vocab && vocab.length) {
+    const chipsWrap = document.createElement('div');
+    chipsWrap.className = 'vocab-chips';
+    vocab.forEach(v => {
+      if (!v.nl) return;
+      const chip = document.createElement('button');
+      chip.className = 'vocab-chip';
+      const already = vocabList.some(x => x.nl.toLowerCase() === v.nl.toLowerCase());
+      chip.textContent = already ? `✓ ${v.nl}` : `+ ${v.nl} = ${v.en}`;
+      if (already) chip.classList.add('added');
+      chip.onclick = () => {
+        if (chip.classList.contains('added')) return;
+        addVocabWord(v.nl, v.en);
+        chip.textContent = `✓ ${v.nl}`;
+        chip.classList.add('added');
+      };
+      chipsWrap.appendChild(chip);
+    });
+    div.appendChild(chipsWrap);
+  }
+
+  addToTop(div);
+
+  if (correction && correction.had_mistake) {
+    const userBubbles = transcriptEl.querySelectorAll('.msg.user');
+    const targetUserBubble = userBubbles[0]; // most recent user message is first in DOM order
+    if (targetUserBubble) {
+      const note = document.createElement('div');
+      note.className = 'correction';
+      note.innerHTML = `closer to: <b>${escapeHtml(correction.better || '')}</b>${correction.note ? ' — ' + escapeHtml(correction.note) : ''}`;
+      targetUserBubble.appendChild(note);
+    }
+  }
+
+  if (doSpeak) speakDutch(reply_nl);
+}
+
+function renderSanneReply(parsed){
+  history.push({role:'assistant', content: parsed.reply_nl || ''});
+  renderSanneBubble(parsed.reply_nl, parsed.reply_en, parsed.correction, true, parsed.vocab);
+  savedTurns.push({kind:'sanne', reply_nl: parsed.reply_nl, reply_en: parsed.reply_en, correction: parsed.correction, vocab: parsed.vocab});
+  saveState();
+}
+
+function speakDutch(text){
+  if (!text || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const speak = () => {
+    const voices = window.speechSynthesis.getVoices();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'nl-NL';
+    const match = voices.find(v => v.lang === 'nl-NL') || voices.find(v => v.lang.startsWith('nl'));
+    if (match) utter.voice = match;
+    utter.rate = 0.95;
+    utter.onstart = () => micBtn.classList.add('speaking');
+    utter.onend = () => micBtn.classList.remove('speaking');
+    utter.onerror = () => micBtn.classList.remove('speaking');
+    window.speechSynthesis.speak(utter);
+  };
+  if (window.speechSynthesis.getVoices().length === 0) {
+    window.speechSynthesis.onvoiceschanged = speak;
+  } else {
+    speak();
+  }
+}
+
+// --- Flashcard review ---
+const vocabModal = document.getElementById('vocabModal');
+const flashcardEl = document.getElementById('flashcardEl');
+const flashcardActions = document.getElementById('flashcardActions');
+const flashcardProgress = document.getElementById('vocabProgress');
+let reviewQueue = [];
+let reviewIndex = 0;
+let showingAnswer = false;
+
+function buildReviewQueue(){
+  // weaker (still-learning) words appear more often — duplicate them into the queue based on their weak count
+  let queue = [];
+  vocabList.forEach(v => {
+    const copies = 1 + Math.min(v.weak, 3);
+    for (let i = 0; i < copies; i++) queue.push(v);
+  });
+  // shuffle
+  for (let i = queue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [queue[i], queue[j]] = [queue[j], queue[i]];
+  }
+  return queue;
+}
+
+function renderFlashcard(){
+  if (reviewQueue.length === 0) {
+    flashcardEl.innerHTML = `<div class="empty-vocab">No saved words yet — tap the "+" chips under Sanne's replies during a conversation to build your list.</div>`;
+    flashcardActions.style.display = 'none';
+    flashcardProgress.textContent = '';
+    return;
+  }
+  if (reviewIndex >= reviewQueue.length) {
+    flashcardEl.innerHTML = `<div class="empty-vocab">Nice work — you've reviewed all ${reviewQueue.length} cards this round. Close and reopen to go again.</div>`;
+    flashcardActions.style.display = 'none';
+    flashcardProgress.textContent = 'Done';
+    return;
+  }
+  const card = reviewQueue[reviewIndex];
+  showingAnswer = false;
+  flashcardEl.innerHTML = escapeHtml(card.nl);
+  flashcardActions.style.display = 'none';
+  flashcardProgress.textContent = (reviewIndex + 1) + ' / ' + reviewQueue.length;
+}
+
+flashcardEl.onclick = () => {
+  if (reviewQueue.length === 0 || reviewIndex >= reviewQueue.length) return;
+  if (showingAnswer) return;
+  const card = reviewQueue[reviewIndex];
+  showingAnswer = true;
+  flashcardEl.innerHTML = escapeHtml(card.nl) + `<div class="answer">${escapeHtml(card.en)}</div>`;
+  flashcardActions.style.display = 'flex';
+};
+
+document.getElementById('prevCardBtn').onclick = () => {
+  if (reviewQueue.length === 0) return;
+  reviewIndex = Math.max(0, reviewIndex - 1);
+  renderFlashcard();
+};
+
+document.getElementById('nextCardBtn').onclick = () => {
+  if (reviewQueue.length === 0) return;
+  reviewIndex = Math.min(reviewQueue.length - 1, reviewIndex + 1);
+  renderFlashcard();
+};
+
+document.getElementById('gotItBtn').onclick = () => {
+  const card = reviewQueue[reviewIndex];
+  const real = vocabList.find(v => v.nl === card.nl);
+  if (real) real.weak = Math.max(0, real.weak - 1);
+  saveVocab();
+  reviewIndex++;
+  renderFlashcard();
+};
+
+document.getElementById('stillLearningBtn').onclick = () => {
+  const card = reviewQueue[reviewIndex];
+  const real = vocabList.find(v => v.nl === card.nl);
+  if (real) real.weak = Math.min(5, real.weak + 1);
+  saveVocab();
+  reviewIndex++;
+  renderFlashcard();
+};
+
+document.getElementById('vocabBtn').onclick = () => {
+  reviewQueue = buildReviewQueue();
+  reviewIndex = 0;
+  renderFlashcard();
+  showPane('review');
+  vocabModal.classList.add('open');
+};
+
+document.getElementById('vocabClose').onclick = () => {
+  vocabModal.classList.remove('open');
+};
+
+vocabModal.onclick = (e) => {
+  if (e.target === vocabModal) vocabModal.classList.remove('open');
+};
+
+const reviewPane = document.getElementById('reviewPane');
+const listPane = document.getElementById('listPane');
+const vocabListEl = document.getElementById('vocabListEl');
+
+function showPane(which){
+  if (which === 'review') {
+    reviewPane.style.display = 'block';
+    listPane.style.display = 'none';
+  } else {
+    reviewPane.style.display = 'none';
+    listPane.style.display = 'block';
+    renderVocabList();
+  }
+}
+
+document.getElementById('showReviewBtn').onclick = () => {
+  reviewQueue = buildReviewQueue();
+  reviewIndex = 0;
+  renderFlashcard();
+  showPane('review');
+};
+document.getElementById('showListBtn').onclick = () => showPane('list');
+
+function renderVocabList(){
+  if (vocabList.length === 0) {
+    vocabListEl.innerHTML = `<div class="empty-vocab">No words saved yet.</div>`;
+    return;
+  }
+  vocabListEl.innerHTML = '';
+  // newest first
+  [...vocabList].reverse().forEach(v => {
+    const row = document.createElement('div');
+    row.className = 'vocab-row';
+    row.innerHTML = `<div class="words"><b>${escapeHtml(v.nl)}</b> — ${escapeHtml(v.en)}</div>`;
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-btn';
+    delBtn.textContent = 'Delete';
+    delBtn.onclick = () => {
+      vocabList = vocabList.filter(x => x.nl !== v.nl);
+      saveVocab();
+      renderVocabList();
+    };
+    row.appendChild(delBtn);
+    vocabListEl.appendChild(row);
+  });
+}
+
+document.getElementById('addManualBtn').onclick = () => {
+  const nl = prompt('Dutch word or phrase:');
+  if (!nl || !nl.trim()) return;
+  if (vocabList.some(v => v.nl.toLowerCase() === nl.trim().toLowerCase())) {
+    alert('That word is already in your list.');
+    return;
+  }
+  const en = prompt('English meaning:');
+  if (!en || !en.trim()) return;
+  addVocabWord(nl.trim(), en.trim());
+  renderVocabList();
+};
+
+loadVocab();
+loadSavedState();
+
+</script>
+</body>
+</html>
