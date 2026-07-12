@@ -4,7 +4,7 @@
 
 Praatje ("a little chat" in Dutch) is a browser-based app that lets a learner practice *speaking* Dutch out loud with an AI conversation partner named Sanne, instead of tapping through flashcards. Talk, get a spoken reply back in Dutch with an English subtitle, get corrected gently when something's off, and build a vocabulary deck automatically as you go.
 
-**Live app:** [add your GitHub Pages link here]
+**Live app:** [https://anarat2022.github.io/Praatje/]
 
 ---
 
