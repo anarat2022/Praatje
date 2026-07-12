@@ -1,0 +1,89 @@
+<svg viewBox="0 0 760 1080" xmlns="http://www.w3.org/2000/svg" font-family="'IBM Plex Mono', 'Courier New', monospace">
+  <rect width="760" height="1080" fill="#EDEEE9"/>
+
+  <!-- Title -->
+  <text x="380" y="42" text-anchor="middle" font-size="22" font-weight="700" fill="#14171C" font-family="'Space Grotesk','Helvetica Neue',sans-serif">Praatje — how it works</text>
+  <text x="380" y="64" text-anchor="middle" font-size="11" fill="#6b6f76" letter-spacing="1">VOICE INPUT → TRANSCRIPTION → CONVERSATION → SPOKEN REPLY</text>
+
+  <!-- Box 1: mic tap -->
+  <rect x="130" y="90" width="500" height="60" fill="#FAFAF7" stroke="#14171C" stroke-width="2.5"/>
+  <text x="380" y="115" text-anchor="middle" font-size="14" font-weight="700" fill="#14171C">1 · Learner taps mic, speaks Dutch or English</text>
+  <text x="380" y="134" text-anchor="middle" font-size="11" fill="#6b6f76">tap again to stop — no fixed time limit</text>
+
+  <!-- arrow -->
+  <line x1="380" y1="150" x2="380" y2="182" stroke="#14171C" stroke-width="2"/>
+  <polygon points="380,190 373,177 387,177" fill="#14171C"/>
+
+  <!-- Box 2: record -->
+  <rect x="130" y="192" width="500" height="60" fill="#FAFAF7" stroke="#14171C" stroke-width="2.5"/>
+  <text x="380" y="217" text-anchor="middle" font-size="14" font-weight="700" fill="#14171C">2 · Browser records the full clip</text>
+  <text x="380" y="236" text-anchor="middle" font-size="11" fill="#6b6f76">MediaRecorder API — whole sentence captured as one file</text>
+
+  <!-- arrow -->
+  <line x1="380" y1="252" x2="380" y2="284" stroke="#14171C" stroke-width="2"/>
+  <polygon points="380,292 373,279 387,279" fill="#14171C"/>
+
+  <!-- Worker outer group -->
+  <rect x="90" y="300" width="580" height="330" fill="none" stroke="#14171C" stroke-width="2.5" stroke-dasharray="6,4"/>
+  <text x="115" y="326" font-size="12" font-weight="700" fill="#1D3557" letter-spacing="1">CLOUDFLARE WORKER — SERVERLESS PROXY</text>
+
+  <!-- sub box A: gemini -->
+  <rect x="130" y="344" width="500" height="72" fill="#FAFAF7" stroke="#1D3557" stroke-width="2.5"/>
+  <text x="380" y="368" text-anchor="middle" font-size="14" font-weight="700" fill="#1D3557">3 · Google Gemini transcribes the audio</text>
+  <text x="380" y="386" text-anchor="middle" font-size="11" fill="#6b6f76">audio in → plain text out — small, cheap, free-tier call</text>
+  <text x="380" y="402" text-anchor="middle" font-size="11" fill="#6b6f76">only job: turn sound into words, nothing else</text>
+
+  <line x1="380" y1="416" x2="380" y2="440" stroke="#14171C" stroke-width="2"/>
+  <polygon points="380,448 373,435 387,435" fill="#14171C"/>
+
+  <!-- sub box B: claude -->
+  <rect x="130" y="450" width="500" height="90" fill="#FAFAF7" stroke="#E63946" stroke-width="2.5"/>
+  <text x="380" y="474" text-anchor="middle" font-size="14" font-weight="700" fill="#E63946">4 · Claude (Haiku) generates the reply</text>
+  <text x="380" y="492" text-anchor="middle" font-size="11" fill="#6b6f76">holds the actual conversation — persona, corrections,</text>
+  <text x="380" y="507" text-anchor="middle" font-size="11" fill="#6b6f76">CEFR-level pacing, hint handling, vocab suggestions</text>
+  <text x="380" y="524" text-anchor="middle" font-size="10" fill="#6b6f76" font-style="italic">returns one JSON object: reply, translation, correction, vocab</text>
+
+  <text x="115" y="612" font-size="10" fill="#6b6f76">two API keys held server-side · never exposed to the browser</text>
+
+  <!-- arrow out of worker -->
+  <line x1="380" y1="630" x2="380" y2="662" stroke="#14171C" stroke-width="2"/>
+  <polygon points="380,670 373,657 387,657" fill="#14171C"/>
+
+  <!-- Box: render + speak -->
+  <rect x="130" y="672" width="500" height="76" fill="#FAFAF7" stroke="#14171C" stroke-width="2.5"/>
+  <text x="380" y="698" text-anchor="middle" font-size="14" font-weight="700" fill="#14171C">5 · App renders the reply and speaks it aloud</text>
+  <text x="380" y="716" text-anchor="middle" font-size="11" fill="#6b6f76">Dutch spoken · English shown as subtitle</text>
+  <text x="380" y="734" text-anchor="middle" font-size="11" fill="#6b6f76">mistakes get a quiet correction note, not a lecture</text>
+
+  <!-- split arrows -->
+  <line x1="380" y1="748" x2="380" y2="768" stroke="#14171C" stroke-width="2"/>
+  <line x1="230" y1="768" x2="530" y2="768" stroke="#14171C" stroke-width="2"/>
+  <line x1="230" y1="768" x2="230" y2="792" stroke="#14171C" stroke-width="2"/>
+  <line x1="530" y1="768" x2="530" y2="792" stroke="#14171C" stroke-width="2"/>
+  <polygon points="230,800 223,787 237,787" fill="#14171C"/>
+  <polygon points="530,800 523,787 537,787" fill="#14171C"/>
+
+  <!-- Box left: vocab -->
+  <rect x="90" y="802" width="290" height="100" fill="#FAFAF7" stroke="#F4B400" stroke-width="2.5"/>
+  <text x="235" y="828" text-anchor="middle" font-size="13" font-weight="700" fill="#14171C">Vocab flashcards</text>
+  <text x="235" y="848" text-anchor="middle" font-size="10.5" fill="#6b6f76">new words tapped or</text>
+  <text x="235" y="864" text-anchor="middle" font-size="10.5" fill="#6b6f76">AI-suggested get saved</text>
+  <text x="235" y="880" text-anchor="middle" font-size="10.5" fill="#6b6f76">weak words resurface</text>
+  <text x="235" y="896" text-anchor="middle" font-size="10.5" fill="#6b6f76">more often on review</text>
+
+  <!-- Box right: persistence -->
+  <rect x="380" y="802" width="290" height="100" fill="#FAFAF7" stroke="#2A9D5C" stroke-width="2.5"/>
+  <text x="525" y="828" text-anchor="middle" font-size="13" font-weight="700" fill="#14171C">Conversation + level</text>
+  <text x="525" y="848" text-anchor="middle" font-size="10.5" fill="#6b6f76">full history persists</text>
+  <text x="525" y="864" text-anchor="middle" font-size="10.5" fill="#6b6f76">across sessions</text>
+  <text x="525" y="880" text-anchor="middle" font-size="10.5" fill="#6b6f76">CEFR level climbs</text>
+  <text x="525" y="896" text-anchor="middle" font-size="10.5" fill="#6b6f76">automatically over time</text>
+
+  <!-- footer -->
+  <line x1="60" y1="940" x2="700" y2="940" stroke="#14171C" stroke-width="1.5"/>
+  <text x="380" y="966" text-anchor="middle" font-size="11" fill="#6b6f76">Frontend: single-file HTML/JS, hosted free on GitHub Pages</text>
+  <text x="380" y="984" text-anchor="middle" font-size="11" fill="#6b6f76">Storage: browser localStorage — no database, no accounts, no server to run</text>
+  <text x="380" y="1002" text-anchor="middle" font-size="11" fill="#6b6f76">Voice output: Web Speech API (browser text-to-speech)</text>
+  <text x="380" y="1030" text-anchor="middle" font-size="10" fill="#6b6f76" font-style="italic">Two-provider split by design: Gemini's free tier absorbs the frequent,</text>
+  <text x="380" y="1046" text-anchor="middle" font-size="10" fill="#6b6f76" font-style="italic">cheap transcription calls; Claude is reserved for the part that needs real quality.</text>
+</svg>
